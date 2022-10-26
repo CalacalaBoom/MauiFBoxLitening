@@ -1,0 +1,65 @@
+﻿@using MauiFBoxLitening.Data
+@inherits LayoutComponentBase
+
+<body class="Site">
+    <header>
+        繁易盒子数据监控
+    </header>
+    <main class="Site-content">
+        @Body
+    </main>
+    <footer>
+        <Menu Items="@menuItems" DisableNavigation="true" IsBottom="true" OnClick="@NavTo" />
+    </footer>
+</body>
+
+<style>
+    .Site {
+        display: flex;
+        display: -webkit-flex; /* Safari */
+        min-height: 100vh;
+        flex-direction: column;
+    }
+
+    .Site-content {
+        flex: 1;
+    }
+</style>
+
+@inject DialogService DialogService
+@code {
+    [Inject]
+    private NavigationManager? nav { get; set; }
+
+    private IEnumerable<MenuItem> menuItems { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        List<MenuItem> Items = new List<MenuItem>();
+
+        foreach (var box_group in Caches.boxgroups)
+        {
+            List<MenuItem> boxsItems = new List<MenuItem>();
+            foreach (var box in Caches.boxs.Where(w => w.uid == box_group.uid))
+            {
+                boxsItems.Add(new MenuItem()
+                    {
+                        Text = box.alias,
+                        Url = "/" + box.boxNo
+                    });
+            }
+            Items.Add(new MenuItem()
+            {
+                Text = box_group.name,
+                Items = boxsItems
+            });
+        }
+        menuItems = Items;
+        base.OnInitializedAsync();
+    }
+
+    private Task NavTo(MenuItem item)
+    {
+        nav.NavigateTo(item.Url);
+        return Task.CompletedTask;
+    }
+}
